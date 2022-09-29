@@ -2,7 +2,7 @@ name: 'Azure Code Signing'
 description: 'Sign your files with Azure Code Signing.'
 inputs:
   azure-tenant-id:
-    description: The Azure Active Directory tenant(directory) ID.
+    description: The Azure Active Directory tenant (directory) ID.
     required: false
   azure-client-id:
     description: The client (application) ID of an App Registration in the tenant.
@@ -27,15 +27,15 @@ inputs:
                  accounts with MFA enabled.
     required: false
   endpoint:
-    description: The code signing account endpoint. The URI value must have a URI that aligns to the
+    description: The Code Signing Account endpoint. The URI value must have a URI that aligns to the
                  region your Code Signing Account and Certificate Profile you are specifying were created
                  in during the setup of these resources.
     required: true
   code-signing-account-name:
-    description: The code signing account name.
+    description: The Code Signing Account name.
     required: true
   certificate-profile-name:
-    description: The certificate profile name.
+    description: The Certificate Profile name.
     required: true
   correlation-id:
     description: An opaque string value that you can provide to correlate sign requests with your own
@@ -65,7 +65,7 @@ inputs:
                  a separate line. Can be combined with the files-folder input.
     required: false
   file-digest:
-    description: The name of the digest algorithm used for hashing the file being signed.
+    description: The name of the digest algorithm used for hashing the files being signed.
     required: false
     default: SHA256
   timestamp-rfc3161:
