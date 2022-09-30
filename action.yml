@@ -1,0 +1,117 @@
+name: 'Azure Code Signing'
+description: 'Sign your files with Azure Code Signing.'
+inputs:
+  azure-tenant-id:
+    description: The Azure Active Directory tenant (directory) ID.
+    required: false
+  azure-client-id:
+    description: The client (application) ID of an App Registration in the tenant.
+    required: false
+  azure-client-secret:
+    description: A client secret that was generated for the App Registration.
+    required: false
+  azure-client-certificate-path:
+    description: A path to certificate and private key pair in PEM or PFX format, which can authenticate
+                 the App Registration.
+    required: false
+  azure-client-send-certificate-chain:
+    description: Specifies whether an authentication request will include an x5c header to support subject
+                 name / issuer based authentication. When set to `true` or `1`, authentication requests
+                 include the x5c header.
+    required: false
+  azure-username:
+    description: The username, also known as upn, of an Azure Active Directory user account.
+    required: false
+  azure-password:
+    description: The password of the Azure Active Directory user account. Note this does not support
+                 accounts with MFA enabled.
+    required: false
+  endpoint:
+    description: The Code Signing Account endpoint. The URI value must have a URI that aligns to the
+                 region your Code Signing Account and Certificate Profile you are specifying were created
+                 in during the setup of these resources.
+    required: true
+  code-signing-account-name:
+    description: The Code Signing Account name.
+    required: true
+  certificate-profile-name:
+    description: The Certificate Profile name.
+    required: true
+  correlation-id:
+    description: An opaque string value that you can provide to correlate sign requests with your own
+                 workflows such as build identifiers or machine names.
+    required: false
+  files-folder:
+    description: The folder containing files to be signed. Can be combined with the file-catalog input.
+    required: false
+  files-folder-filter:
+    description: A comma separated list of file extensions that determines which types of files will
+                 be signed in the folder specified by the files-folder input. E.g., 'dll,exe,msix'.
+                 Any file type not included in this list will not be signed. If this input is not used,
+                 all files in the folder will be signed.
+    required: false
+  files-folder-recursive:
+    description: A boolean value (true/false) that indicates if the folder specified by the files-folder
+                 input should be searched recursively. The default value is false.
+    required: false
+    default: false
+  files-folder-depth:
+    description: An integer value that indicates the depth of the recursive search toggled by the
+                 files-folder-recursive input.
+    required: false
+  files-catalog:
+    description: A file containing a list of relative paths to the files being signed. The paths
+                 should be relative to the location of the catalog file. Each file path should be on
+                 a separate line. Can be combined with the files-folder input.
+    required: false
+  file-digest:
+    description: The name of the digest algorithm used for hashing the files being signed.
+    required: false
+    default: SHA256
+  timestamp-rfc3161:
+    description: A URL to an RFC3161 compliant timestamping service.
+    required: false
+  timestamp-digest:
+    description: The name of the digest algorithm used for timestamping.
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Remove lock on dotnet.exe
+      run: |
+        dotnet build-server shutdown
+      shell: pwsh
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Invoke signing
+      env:
+        AZURE_TENANT_ID: ${{ inputs.azure-tenant-id }}
+        AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
+        AZURE_CLIENT_SECRET: ${{ inputs.azure-client-secret }}
+        AZURE_CLIENT_CERTIFICATE_PATH: ${{ inputs.azure-client-certificate-path }}
+        AZURE_CLIENT_SEND_CERTIFICATE_CHAIN: ${{ inputs.azure-client-send-certificate-chain }}
+        AZURE_USERNAME: ${{ inputs.azure-username }}
+        AZURE_PASSWORD: ${{ inputs.azure-password }}
+      run: |
+        Install-Module -Name AzureCodeSigning -RequiredVersion 0.1.13 -Force
+
+        $invokeSigningParams = @{
+            Endpoint = "${{ inputs.endpoint }}"
+            CodeSigningAccountName = "${{ inputs.code-signing-account-name }}"
+            CertificateProfileName = "${{ inputs.certificate-profile-name }}"
+            CorrelationId = "${{ inputs.correlation-id }}"
+            FilesFolder = "${{ inputs.files-folder }}"
+            FilesFolderFilter = "${{ inputs.files-folder-filter }}"
+            FilesFolderRecurse = "${{ inputs.files-folder-recurse }}"
+            FilesFolderDepth = "${{ inputs.files-folder-depth }}"
+            FilesCatalog = "${{ inputs.files-catalog }}"
+            FileDigest = "${{ inputs.file-digest }}"
+            TimestampRfc3161 = "${{ inputs.timestamp-rfc3161 }}"
+            TimestampDigest = "${{ inputs.timestamp-digest }}"
+        }
+        Invoke-Signing @invokeSigningParams
+      shell: pwsh

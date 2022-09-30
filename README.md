@@ -1,14 +1,131 @@
-# Project
+# Azure Code Signing
+With the Azure Code Signing Action for Github, you can sign your files with an Azure Code Signing certificate.
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+<!-- something about onboarding -->
 
-As the maintainer of this project, please make a few updates:
+# Example
+```yaml
+on:
+  push:
+    branches: [main]
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+jobs:
+  build-and-sign:
+    runs-on: windows-latest
+    name: Build app and sign files with Azure Code Signing
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install dependencies
+        run: dotnet restore App
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore WpfApp
+
+      - name: Sign files with Azure Code Signing
+        uses: azure/azure-code-signing-action@v1.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: https://wus2.codesigning.azure.net/
+          code-signing-account-name: vscx-codesigning
+          certificate-profile-name: vscx-certificate-profile
+          files-folder: ${{ github.workspace }}\App\App\bin\Release\net6.0-windows
+          files-folder-filter: exe,dll
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+```
+
+## Usage
+
+### Authentication
+Behind the scenes, the action uses [EnvironmentCredential](https://learn.microsoft.com/en-us/dotnet/api/azure.identity.environmentcredential) as the primary method of authentication to Azure. The same variables are exposed as inputs and then set to action-scoped environment variables.
+
+#### App Registration
+```yaml
+# The Azure Active Directory tenant (directory) ID.
+azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+# The client (application) ID of an App Registration in the tenant.
+azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+
+# A client secret that was generated for the App Registration.
+azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+```
+
+#### Azure Active Directory
+```yaml
+# The username, also known as upn, of an Azure Active Directory user account.
+azure-username: ${{ secrets.AZURE_USERNAME }}
+
+# The password of the Azure Active Directory user account. Note this does not support accounts with MFA enabled.
+azure-password: ${{ secrets.AZURE_PASSWORD }}
+```
+
+### Account Details
+```yaml
+# The Code Signing Account endpoint. The URI value must have a URI that aligns to the region your Code Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.
+endpoint: https://wus2.codesigning.azure.net/
+
+# The Code Signing Account name.
+code-signing-account-name: my-account-name
+
+# The Certificate Profile name.
+certificate-profile-name: my-profile-name
+
+# An opaque string value that you can provide to correlate sign requests with your own workflows such as build identifiers or machine names.
+correlation-id: 32C50B44-D8D0-457A-B0FD-9D8220DE91C7
+```
+
+### File Specification
+
+#### Files Folder
+This strategy allows you to specify a folder that contains all the files you want signed. There are options available for narrowing the focus as well. For example, you can use the `files-folder-filter` input to specify that you only want `exe` files to be signed.
+
+```yaml
+# The folder containing files to be signed. Can be combined with the file-catalog input.
+files-folder: ${{ github.workspace }}\App\App\bin\Release\net6.0-windows
+
+# A comma separated list of file extensions that determines which types of files will be signed in the folder specified by the files-folder input. Any file type not included in this list will not be signed. If this input is not used, all files in the folder will be signed.
+files-folder-filter: dll,exe,msix
+
+# A boolean value (true/false) that indicates if the folder specified by the files-folder input should be searched recursively. The default value is false.
+files-folder-recursive: true
+
+# An integer value that indicates the depth of the recursive search toggled by the files-folder-recursive input.
+files-folder-depth: 2
+```
+
+#### Files Catalog
+This strategy allows you to specify a precise list of files to be signed.
+
+```yaml
+# A file containing a list of relative paths to the files being signed. The paths should be relative to the location of the catalog file. Each file path should be on a separate line. Can be combined with the files-folder input.
+files-catalog: ${{ github.workspace }}\catalog.txt
+```
+
+### Digest Algorithm
+```yaml
+# The name of the digest algorithm used for hashing the file being signed. The default value is SHA256.
+file-digest: SHA384
+```
+
+### Timestamping
+```yaml
+# A URL to an RFC3161 compliant timestamping service.
+timestamp-rfc3161: http://timestamp.acs.microsoft.com
+
+# The name of the digest algorithm used for timestamping.
+timestamp-digest: SHA256
+```
 
 ## Contributing
 
