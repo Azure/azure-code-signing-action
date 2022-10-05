@@ -156,16 +156,47 @@ runs:
       run: |
         Install-Module -Name AzureCodeSigning -RequiredVersion 0.1.14 -Force
 
-        $filesFolderRecurse = [System.Convert]::ToBoolean("${{ inputs.files-folder-recurse }}")
-        $filesFolderDepth = [System.Convert]::ToInt32("${{ inputs.files-folder-depth }}")
-        $appendSignature = [System.Convert]::ToBoolean("${{ inputs.append-signature }}")
-        $generateDigestXml = [System.Convert]::ToBoolean("${{ inputs.generate-digest-xml }}")
-        $signDigest = [System.Convert]::ToBoolean("${{ inputs.sign-digest }}")
-        $generatePageHashes = [System.Convert]::ToBoolean("${{ inputs.generate-page-hashes }}")
-        $suppressPageHashes = [System.Convert]::ToBoolean("${{ inputs.suppress-page-hashes }}")
-        $generatePkcs7 = [System.Convert]::ToBoolean("${{ inputs.generate-pkcs7 }}")
+        $filesFolderRecurse = "${{ inputs.files-folder-recurse }}"
+        if (-Not [string]::IsNullOrWhiteSpace($filesFolderRecurse)) {
+          $filesFolderRecurse = [System.Convert]::ToBoolean($filesFolderRecurse)
+        }
 
-        $invokeSigningParams = @{
+        $filesFolderDepth = "${{ inputs.files-folder-depth }}"
+        if (-Not [string]::IsNullOrWhiteSpace($filesFolderDepth)) {
+          $filesFolderDepth = [System.Convert]::ToInt32($filesFolderDepth)
+        }
+
+        $appendSignature = "${{ inputs.append-signature }}"
+        if (-Not [string]::IsNullOrWhiteSpace($appendSignature)) {
+          $appendSignature = [System.Convert]::ToBoolean($appendSignature)
+        }
+
+        $generateDigestXml = "${{ inputs.generate-digest-xml }}"
+        if (-Not [string]::IsNullOrWhiteSpace($generateDigestXml)) {
+          $generateDigestXml = [System.Convert]::ToBoolean($generateDigestXml)
+        }
+
+        $signDigest = "${{ inputs.sign-digest }}"
+        if (-Not [string]::IsNullOrWhiteSpace($signDigest)) {
+          $signDigest = [System.Convert]::ToBoolean($signDigest)
+        }
+
+        $generatePageHashes = "${{ inputs.generate-page-hashe }}"
+        if (-Not [string]::IsNullOrWhiteSpace($generatePageHashes)) {
+          $generatePageHashes = [System.Convert]::ToBoolean($generatePageHashes)
+        }
+
+        $suppressPageHashes = "${{ inputs.suppress-page-hashes }}"
+        if (-Not [string]::IsNullOrWhiteSpace($suppressPageHashes)) {
+          $suppressPageHashes = [System.Convert]::ToBoolean($suppressPageHashes)
+        }
+
+        $generatePkcs7 = "${{ inputs.generate-pkcs7 }}"
+        if (-Not [string]::IsNullOrWhiteSpace($generatePkcs7)) {
+          $generatePkcs7 = [System.Convert]::ToBoolean($generatePkcs7)
+        }
+
+        $invokeAzureCodeSigningParams = @{
             Endpoint = "${{ inputs.endpoint }}"
             CodeSigningAccountName = "${{ inputs.code-signing-account-name }}"
             CertificateProfileName = "${{ inputs.certificate-profile-name }}"
@@ -192,5 +223,5 @@ runs:
             Pkcs7Oid = "${{ inputs.pkcs7-oid }}"
             EnhancedKeyUsage = "${{ inputs.enhanced-key-usage }}"
         }
-        Invoke-Signing @invokeSigningParams
+        Invoke-AzureCodeSigning @invokeAzureCodeSigningParams
       shell: pwsh
