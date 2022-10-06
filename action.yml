@@ -181,7 +181,7 @@ runs:
           $signDigest = [System.Convert]::ToBoolean($signDigest)
         }
 
-        $generatePageHashes = "${{ inputs.generate-page-hashe }}"
+        $generatePageHashes = "${{ inputs.generate-page-hashes }}"
         if (-Not [string]::IsNullOrWhiteSpace($generatePageHashes)) {
           $generatePageHashes = [System.Convert]::ToBoolean($generatePageHashes)
         }
