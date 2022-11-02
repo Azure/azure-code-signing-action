@@ -136,7 +136,7 @@ runs:
   steps:
     - name: Remove lock on dotnet.exe
       run: |
-        dotnet build-server shutdown
+        try { dotnet build-server shutdown } catch {}
       shell: pwsh
 
     - name: Setup .NET Core SDK
