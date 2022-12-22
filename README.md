@@ -1,5 +1,5 @@
 # Azure Code Signing
-The Azure Code Signing (ACS) Action allows you to digitally sign your files using an Azure Code Signing certificate during a GitHub Actions run.
+The Azure Code Signing Action allows you to digitally sign your files using an Azure Code Signing certificate during a GitHub Actions run.
 
 ## Runner Requirements
 This Action can only be executed on Windows runner. It is supported by the following GitHub hosted runners:
