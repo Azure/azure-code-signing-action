@@ -155,7 +155,7 @@ inputs:
     default: 'true'
   timeout:
     description: The number of seconds that the Azure Code Signing service will wait for all files
-                 to be signed before it exits. The default duration is 300 seconds.
+                 to be signed before it exits. The default value is 300 seconds.
     required: false
 
 runs:

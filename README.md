@@ -1,9 +1,18 @@
 # Azure Code Signing
-With the Azure Code Signing Action for Github, you can sign your files with an Azure Code Signing certificate.
+The Azure Code Signing (ACS) Action allows you to digitally sign your files using an Azure Code Signing certificate during a GitHub Actions run.
+
+## Runner Requirements
+This Action can only be executed on Windows runner. It is supported by the following GitHub hosted runners:
+- [windows-2022](https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md)
+- [windows-2019](https://github.com/actions/runner-images/blob/main/images/win/Windows2019-Readme.md)
+
+It is also possible to use self-hosted runners that support PowerShell 5.1 and the .NET 6 runtime (Windows 7+).
 
 <!-- something about onboarding -->
 
-# Example
+## Example
+The example below shows how to sign the build output of a simple Wpf application.
+
 ```yaml
 on:
   push:
@@ -29,7 +38,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore WpfApp
 
       - name: Sign files with Azure Code Signing
-        uses: azure/azure-code-signing-action@v1.0.0
+        uses: azure/azure-code-signing-action@v0.2.15
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -45,9 +54,8 @@ jobs:
 ```
 
 ## Usage
-
 ### Authentication
-Behind the scenes, the action uses [EnvironmentCredential](https://learn.microsoft.com/en-us/dotnet/api/azure.identity.environmentcredential) as the primary method of authentication to Azure. The same variables are exposed as inputs and then set to action-scoped environment variables.
+Behind the scenes, the Action uses [DefaultAzureCredential](https://learn.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) as the primary method of authentication to Azure. The [EnvironmentCredential](https://learn.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) variables are exposed as inputs and then set to Action-scoped environment variables. Each credential type supported by `DefaultAzureCredential` can be disabled using the Action inputs.
 
 #### App Registration
 ```yaml
@@ -70,6 +78,33 @@ azure-username: ${{ secrets.AZURE_USERNAME }}
 azure-password: ${{ secrets.AZURE_PASSWORD }}
 ```
 
+#### Exclude Credentials
+```yaml
+# Exclude the "EnvironmentCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-environment-credential: false
+
+# Exclude the "ManagedIdentity" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-managed-identity-credential: false
+
+# Exclude the "SharedTokenCacheCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-shared-token-cache-credential: false
+
+# Exclude the "VisualStudioCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-visual-studio-credential: false
+
+# Exclude the "VisualStudioCodeCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-visual-studio-code-credential: false
+
+# Exclude the "AzureCliCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-azure-cli-credential: false
+
+# Exclude the "AzurePowerShellCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is false.
+exclude-azure-powershell-credential: false
+
+# Exclude the "InteractiveBrowserCredential" type from being considered when authenticating with "DefaultAzureCredential". The default value is true.
+exclude-interactive-browser-credential: true
+```
+
 ### Account Details
 ```yaml
 # The Code Signing Account endpoint. The URI value must have a URI that aligns to the region your Code Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.
@@ -86,7 +121,6 @@ correlation-id: 32C50B44-D8D0-457A-B0FD-9D8220DE91C7
 ```
 
 ### File Specification
-
 #### Files Folder
 This strategy allows you to specify a folder that contains all the files you want signed. There are options available for narrowing the focus as well. For example, you can use the `files-folder-filter` input to specify that you only want `exe` files to be signed.
 
@@ -98,9 +132,9 @@ files-folder: ${{ github.workspace }}\App\App\bin\Release\net6.0-windows
 files-folder-filter: dll,exe,msix
 
 # A boolean value (true/false) that indicates if the folder specified by the files-folder input should be searched recursively. The default value is false.
-files-folder-recursive: true
+files-folder-recurse: true
 
-# An integer value that indicates the depth of the recursive search toggled by the files-folder-recursive input.
+# An integer value that indicates the depth of the recursive search toggled by the files-folder-recurse input.
 files-folder-depth: 2
 ```
 
@@ -129,7 +163,7 @@ timestamp-digest: SHA256
 
 ### Append Signature
 ```yaml
-# A boolean value (true/false) that indicates if the signature should be appended. If no primary signature is present, this signature is made the primary signature instead.
+# A boolean value (true/false) that indicates if the signature should be appended. If no primary signature is present, this signature is made the primary signature instead. The default value is false.
 append-signature: true
 ```
 
@@ -147,19 +181,19 @@ description-url: https://github.com/azure/azure-code-signing-action
 # Generates the digest to be signed and the unsigned PKCS7 files at this path. The output digest and PKCS7 files will be path\FileName.dig and path\FileName.p7u. To output an additional XML file, see `generate-digest-xml`.
 generate-digest-path: ${{ github.workspace }}\digest
 
-# A boolean value (true/false) that indicates if an XML file is produced when the `generate-digest-path` input is used. The output file will be Path\FileName.dig.xml.
+# A boolean value (true/false) that indicates if an XML file is produced when the `generate-digest-path` input is used. The output file will be Path\FileName.dig.xml. The default value is false.
 generate-digest-xml: true
 
 # Creates the signature by ingesting the signed digest to the unsigned PKCS7 file at this path. The input signed digest and unsigned PKCS7 files should be path\FileName.dig.signed and path\FileName.p7u.
 ingest-digest-path: ${{ github.workspace }}\digest
 
-# A boolean value (true/false) that indicates if only the digest should be signed. The input file should be the digest generated by the `generate-digest-path` input. The output file will be File.signed.
+# A boolean value (true/false) that indicates if only the digest should be signed. The input file should be the digest generated by the `generate-digest-path` input. The output file will be File.signed. The default value is false.
 sign-digest: true
 ```
 
 ### Pages Hashes
 ```yaml
-# A boolean value (true/false) that indicates if page hashes should be generated for executable files.
+# A boolean value (true/false) that indicates if page hashes should be generated for executable files. The default value is false.
 generate-page-hashes: true
 
 # A boolean value (true/false) that indicates if page hashes should be suppressed for executable files. The default is determined by the SIGNTOOL_PAGE_HASHES environment variable and by the wintrust.dll version. This input is ignored for non-PE files.
@@ -168,7 +202,7 @@ suppress-page-hashes: true
 
 ### PKCS7
 ```yaml
-# A boolean value (true/false) that indicates if a Public Key Cryptography Standards (PKCS) #7 file is produced for each specified content file. PKCS #7 files are named path\filename.p7.
+# A boolean value (true/false) that indicates if a Public Key Cryptography Standards (PKCS) #7 file is produced for each specified content file. PKCS #7 files are named path\filename.p7. The default value is false.
 generate-pkcs7: true
 
 # Options for the signed PKCS #7 content. Set value to "Embedded" to embed the signed content in the PKCS #7 file, or to "DetachedSignedData" to produce the signed data portion of a detached PKCS #7 file. If this input is not used, the signed content is embedded by default.
@@ -184,8 +218,16 @@ pkcs7-oid: 1.3.6.1.5.5.7.3.3
 enhanced-key-usage: 1.3.6.1.5.5.7.3.3
 ```
 
-## Contributing
+### Timeout
+```yaml
+# The number of seconds that the Azure Code Signing service will wait for all files to be signed before it exits. The default value is 300 seconds.
+timeout: 600
+```
 
+## Release Notes
+<!-- to be added -->
+
+## Contributing
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
@@ -199,7 +241,6 @@ For more information see the [Code of Conduct FAQ](https://opensource.microsoft.
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Trademarks
-
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
 trademarks or logos is subject to and must follow 
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
