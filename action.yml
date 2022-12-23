@@ -54,7 +54,6 @@ inputs:
     description: A boolean value (true/false) that indicates if the folder specified by the files-folder
                  input should be searched recursively. The default value is false.
     required: false
-    default: false
   files-folder-depth:
     description: An integer value that indicates the depth of the recursive search toggled by the
                  files-folder-recursive input.
@@ -65,9 +64,8 @@ inputs:
                  a separate line. Can be combined with the files-folder input.
     required: false
   file-digest:
-    description: The name of the digest algorithm used for hashing the files being signed.
+    description: The name of the digest algorithm used for hashing the files being signed (e.g. SHA256).
     required: false
-    default: SHA256
   timestamp-rfc3161:
     description: A URL to an RFC3161 compliant timestamping service.
     required: false
@@ -130,6 +128,35 @@ inputs:
     description: The enhanced key usage (EKU) that must be present in the signing certificate. The usage
                  value can be specified by OID or string. The default usage is "Code Signing" (1.3.6.1.5.5.7.3.3).
     required: false
+  exclude-environment-credential:
+    description: Exclude the "EnvironmentCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-managed-identity-credential:
+    description: Exclude the "ManagedIdentity" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-shared-token-cache-credential:
+    description: Exclude the "SharedTokenCacheCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-visual-studio-credential:
+    description: Exclude the "VisualStudioCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-visual-studio-code-credential:
+    description: Exclude the "VisualStudioCodeCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-azure-cli-credential:
+    description: Exclude the "AzureCliCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-azure-powershell-credential:
+    description: Exclude the "AzurePowerShellCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+  exclude-interactive-browser-credential:
+    description: Exclude the "InteractiveBrowserCredential" type from being considered when authenticating with "DefaultAzureCredential".
+    required: false
+    default: 'true'
+  timeout:
+    description: The number of seconds that the Azure Code Signing service will wait for all files
+                 to be signed before it exits. The default value is 300 seconds.
+    required: false
 
 runs:
   using: 'composite'
@@ -154,74 +181,179 @@ runs:
         AZURE_USERNAME: ${{ inputs.azure-username }}
         AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
-        Install-Module -Name AzureCodeSigning -RequiredVersion 0.1.14 -Force
+        Install-Module -Name AzureCodeSigning -RequiredVersion 0.2.15 -Force
+
+        $params = @{}
+
+        $endpoint = "${{ inputs.endpoint }}"
+        if (-Not [string]::IsNullOrWhiteSpace($endpoint)) {
+          $params["Endpoint"] = $endpoint
+        }
+
+        $codeSigningAccountName = "${{ inputs.code-signing-account-name }}"
+        if (-Not [string]::IsNullOrWhiteSpace($codeSigningAccountName)) {
+          $params["CodeSigningAccountName"] = $codeSigningAccountName
+        }
+
+        $certificateProfileName = "${{ inputs.certificate-profile-name }}"
+        if (-Not [string]::IsNullOrWhiteSpace($certificateProfileName)) {
+          $params["CertificateProfileName"] = $certificateProfileName
+        }
+
+        $correlationId = "${{ inputs.correlation-id }}"
+        if (-Not [string]::IsNullOrWhiteSpace($correlationId)) {
+          $params["CorrelationId"] = $correlationId
+        }
+
+        $filesFolder = "${{ inputs.files-folder }}"
+        if (-Not [string]::IsNullOrWhiteSpace($filesFolder)) {
+          $params["FilesFolder"] = $filesFolder
+        }
+
+        $filesFolderFilter = "${{ inputs.files-folder-filter }}"
+        if (-Not [string]::IsNullOrWhiteSpace($filesFolderFilter)) {
+          $params["FilesFolderFilter"] = $filesFolderFilter
+        }
 
         $filesFolderRecurse = "${{ inputs.files-folder-recurse }}"
         if (-Not [string]::IsNullOrWhiteSpace($filesFolderRecurse)) {
-          $filesFolderRecurse = [System.Convert]::ToBoolean($filesFolderRecurse)
+          $params["FilesFolderRecurse"] = $true
         }
 
         $filesFolderDepth = "${{ inputs.files-folder-depth }}"
         if (-Not [string]::IsNullOrWhiteSpace($filesFolderDepth)) {
-          $filesFolderDepth = [System.Convert]::ToInt32($filesFolderDepth)
+          $params["FilesFolderDepth"] = [System.Convert]::ToInt32($filesFolderDepth)
+        }
+
+        $filesCatalog = "${{ inputs.files-catalog }}"
+        if (-Not [string]::IsNullOrWhiteSpace($filesCatalog)) {
+          $params["FilesCatalog"] = $filesCatalog
+        }
+
+        $fileDigest = "${{ inputs.file-digest }}"
+        if (-Not [string]::IsNullOrWhiteSpace($fileDigest)) {
+          $params["FileDigest"] = $fileDigest
+        }
+
+        $timestampRfc3161 = "${{ inputs.timestamp-rfc3161 }}"
+        if (-Not [string]::IsNullOrWhiteSpace($timestampRfc3161)) {
+          $params["TimestampRfc3161"] = $timestampRfc3161
+        }
+
+        $timestampDigest = "${{ inputs.timestamp-digest }}"
+        if (-Not [string]::IsNullOrWhiteSpace($timestampDigest)) {
+          $params["TimestampDigest"] = $timestampDigest
         }
 
         $appendSignature = "${{ inputs.append-signature }}"
         if (-Not [string]::IsNullOrWhiteSpace($appendSignature)) {
-          $appendSignature = [System.Convert]::ToBoolean($appendSignature)
+          $params["AppendSignature"] = $true
         }
 
-        $generateDigestXml = "${{ inputs.generate-digest-xml }}"
+        $description = "${{ inputs.description }}"
+        if (-Not [string]::IsNullOrWhiteSpace($description)) {
+          $params["Description"] = $description
+        }
+
+        $descriptionUrl = "${{ inputs.description-url }}"
+        if (-Not [string]::IsNullOrWhiteSpace($descriptionUrl)) {
+          $params["DescriptionUrl"] = $descriptionUrl
+        }
+
+        $generateDigestPath = "${{ inputs.generate-digest-path }}"
+        if (-Not [string]::IsNullOrWhiteSpace($generateDigestPath)) {
+          $params["GenerateDigestPath"] = $generateDigestPath
+        }
+
+        $generateDigestXml = "${{ inputs.generateDigestXml }}"
         if (-Not [string]::IsNullOrWhiteSpace($generateDigestXml)) {
-          $generateDigestXml = [System.Convert]::ToBoolean($generateDigestXml)
+          $params["GenerateDigestXml"] = $true
+        }
+
+        $ingestDigestPath = "${{ inputs.ingest-digest-path }}"
+        if (-Not [string]::IsNullOrWhiteSpace($ingestDigestPath)) {
+          $params["IngestDigestPath"] = $ingestDigestPath
         }
 
         $signDigest = "${{ inputs.sign-digest }}"
         if (-Not [string]::IsNullOrWhiteSpace($signDigest)) {
-          $signDigest = [System.Convert]::ToBoolean($signDigest)
+          $params["SignDigest"] = $true
         }
 
         $generatePageHashes = "${{ inputs.generate-page-hashes }}"
         if (-Not [string]::IsNullOrWhiteSpace($generatePageHashes)) {
-          $generatePageHashes = [System.Convert]::ToBoolean($generatePageHashes)
+          $params["GeneratePageHashes"] = $true
         }
 
         $suppressPageHashes = "${{ inputs.suppress-page-hashes }}"
         if (-Not [string]::IsNullOrWhiteSpace($suppressPageHashes)) {
-          $suppressPageHashes = [System.Convert]::ToBoolean($suppressPageHashes)
+          $params["SuppressPageHashes"] = $true
         }
 
         $generatePkcs7 = "${{ inputs.generate-pkcs7 }}"
         if (-Not [string]::IsNullOrWhiteSpace($generatePkcs7)) {
-          $generatePkcs7 = [System.Convert]::ToBoolean($generatePkcs7)
+          $params["GeneratePkcs7"] = $true
         }
 
-        $invokeAzureCodeSigningParams = @{
-            Endpoint = "${{ inputs.endpoint }}"
-            CodeSigningAccountName = "${{ inputs.code-signing-account-name }}"
-            CertificateProfileName = "${{ inputs.certificate-profile-name }}"
-            CorrelationId = "${{ inputs.correlation-id }}"
-            FilesFolder = "${{ inputs.files-folder }}"
-            FilesFolderFilter = "${{ inputs.files-folder-filter }}"
-            FilesFolderRecurse = $filesFolderRecurse
-            FilesFolderDepth = $filesFolderDepth
-            FilesCatalog = "${{ inputs.files-catalog }}"
-            FileDigest = "${{ inputs.file-digest }}"
-            TimestampRfc3161 = "${{ inputs.timestamp-rfc3161 }}"
-            TimestampDigest = "${{ inputs.timestamp-digest }}"
-            AppendSignature = $appendSignature
-            Description = "${{ inputs.description }}"
-            DescriptionUrl = "${{ inputs.description-url }}"
-            GenerateDigestPath = "${{ inputs.generate-digest-path }}"
-            GenerateDigestXml = $generateDigestXml
-            IngestDigestPath = "${{ inputs.ingest-digest-path }}"
-            SignDigest = $signDigest
-            GeneratePageHashes = $generatePageHashes
-            SuppressPageHashes = $suppressPageHashes
-            GeneratePkcs7 = $generatePkcs7
-            Pkcs7Options = "${{ inputs.pkcs7-options }}"
-            Pkcs7Oid = "${{ inputs.pkcs7-oid }}"
-            EnhancedKeyUsage = "${{ inputs.enhanced-key-usage }}"
+        $pkcs7Options = "${{ inputs.pkcs7-options }}"
+        if (-Not [string]::IsNullOrWhiteSpace($pkcs7Options)) {
+          $params["Pkcs7Options"] = $pkcs7Options
         }
-        Invoke-AzureCodeSigning @invokeAzureCodeSigningParams
+
+        $pkcs7Oid = "${{ inputs.pkcs7-oid }}"
+        if (-Not [string]::IsNullOrWhiteSpace($pkcs7Oid)) {
+          $params["Pkcs7Oid"] = $pkcs7Oid
+        }
+
+        $enhancedKeyUsage = "${{ inputs.enhanced-key-usage }}"
+        if (-Not [string]::IsNullOrWhiteSpace($enhancedKeyUsage)) {
+          $params["EnhancedKeyUsage"] = $enhancedKeyUsage
+        }
+
+        $excludeEnvironmentCredential = "${{ inputs.exclude-environment-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeEnvironmentCredential)) {
+          $params["ExcludeEnvironmentCredential"] = $true
+        }
+
+        $excludeManagedIdentityCredential = "${{ inputs.exclude-managed-identity-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeManagedIdentityCredential)) {
+          $params["ExcludeManagedIdentityCredential"] = $true
+        }
+
+        $excludeSharedTokenCacheCredential = "${{ inputs.exclude-shared-token-cache-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeSharedTokenCacheCredential)) {
+          $params["ExcludeSharedTokenCacheCredential"] = $true
+        }
+
+        $excludeVisualStudioCredential = "${{ inputs.exclude-visual-studio-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCredential)) {
+          $params["ExcludeVisualStudioCredential"] = $true
+        }
+
+        $excludeVisualStudioCodeCredential = "${{ inputs.exclude-visual-studio-code-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCodeCredential)) {
+          $params["ExcludeVisualStudioCodeCredential"] = $true
+        }
+
+        $excludeAzureCliCredential = "${{ inputs.exclude-azure-cli-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeAzureCliCredential)) {
+          $params["ExcludeAzureCliCredential"] = $true
+        }
+
+        $excludeAzurePowerShellCredential = "${{ inputs.exclude-azure-powershell-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeAzurePowerShellCredential)) {
+          $params["ExcludeAzurePowerShellCredential"] = $true
+        }
+
+        $excludeInteractiveBrowserCredential = "${{ inputs.exclude-interactive-browser-credential }}"
+        if (-Not [string]::IsNullOrWhiteSpace($excludeInteractiveBrowserCredential)) {
+          $params["ExcludeInteractiveBrowserCredential"] = $true
+        }
+
+        $timeout = "${{ inputs.timeout }}"
+        if (-Not [string]::IsNullOrWhiteSpace($timeout)) {
+          $params["Timeout"] = [System.Convert]::ToInt32($timeout)
+        }
+
+        Invoke-AzureCodeSigning @params
       shell: pwsh
