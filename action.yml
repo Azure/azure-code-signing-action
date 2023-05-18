@@ -217,7 +217,7 @@ runs:
 
         $filesFolderRecurse = "${{ inputs.files-folder-recurse }}"
         if (-Not [string]::IsNullOrWhiteSpace($filesFolderRecurse)) {
-          $params["FilesFolderRecurse"] = $true
+          $params["FilesFolderRecurse"] = [System.Convert]::ToBoolean($filesFolderRecurse)
         }
 
         $filesFolderDepth = "${{ inputs.files-folder-depth }}"
@@ -247,7 +247,7 @@ runs:
 
         $appendSignature = "${{ inputs.append-signature }}"
         if (-Not [string]::IsNullOrWhiteSpace($appendSignature)) {
-          $params["AppendSignature"] = $true
+          $params["AppendSignature"] = [System.Convert]::ToBoolean($appendSignature)
         }
 
         $description = "${{ inputs.description }}"
@@ -267,7 +267,7 @@ runs:
 
         $generateDigestXml = "${{ inputs.generateDigestXml }}"
         if (-Not [string]::IsNullOrWhiteSpace($generateDigestXml)) {
-          $params["GenerateDigestXml"] = $true
+          $params["GenerateDigestXml"] = [System.Convert]::ToBoolean($generateDigestXml)
         }
 
         $ingestDigestPath = "${{ inputs.ingest-digest-path }}"
@@ -277,22 +277,22 @@ runs:
 
         $signDigest = "${{ inputs.sign-digest }}"
         if (-Not [string]::IsNullOrWhiteSpace($signDigest)) {
-          $params["SignDigest"] = $true
+          $params["SignDigest"] = [System.Convert]::ToBoolean($signDigest)
         }
 
         $generatePageHashes = "${{ inputs.generate-page-hashes }}"
         if (-Not [string]::IsNullOrWhiteSpace($generatePageHashes)) {
-          $params["GeneratePageHashes"] = $true
+          $params["GeneratePageHashes"] = [System.Convert]::ToBoolean($generatePageHashes)
         }
 
         $suppressPageHashes = "${{ inputs.suppress-page-hashes }}"
         if (-Not [string]::IsNullOrWhiteSpace($suppressPageHashes)) {
-          $params["SuppressPageHashes"] = $true
+          $params["SuppressPageHashes"] = [System.Convert]::ToBoolean($suppressPageHashes)
         }
 
         $generatePkcs7 = "${{ inputs.generate-pkcs7 }}"
         if (-Not [string]::IsNullOrWhiteSpace($generatePkcs7)) {
-          $params["GeneratePkcs7"] = $true
+          $params["GeneratePkcs7"] = [System.Convert]::ToBoolean($generatePkcs7)
         }
 
         $pkcs7Options = "${{ inputs.pkcs7-options }}"
@@ -312,42 +312,42 @@ runs:
 
         $excludeEnvironmentCredential = "${{ inputs.exclude-environment-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeEnvironmentCredential)) {
-          $params["ExcludeEnvironmentCredential"] = $true
+          $params["ExcludeEnvironmentCredential"] = [System.Convert]::ToBoolean($excludeEnvironmentCredential)
         }
 
         $excludeManagedIdentityCredential = "${{ inputs.exclude-managed-identity-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeManagedIdentityCredential)) {
-          $params["ExcludeManagedIdentityCredential"] = $true
+          $params["ExcludeManagedIdentityCredential"] = [System.Convert]::ToBoolean($excludeManagedIdentityCredential)
         }
 
         $excludeSharedTokenCacheCredential = "${{ inputs.exclude-shared-token-cache-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeSharedTokenCacheCredential)) {
-          $params["ExcludeSharedTokenCacheCredential"] = $true
+          $params["ExcludeSharedTokenCacheCredential"] = [System.Convert]::ToBoolean($excludeSharedTokenCacheCredential)
         }
 
         $excludeVisualStudioCredential = "${{ inputs.exclude-visual-studio-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCredential)) {
-          $params["ExcludeVisualStudioCredential"] = $true
+          $params["ExcludeVisualStudioCredential"] = [System.Convert]::ToBoolean($excludeVisualStudioCredential)
         }
 
         $excludeVisualStudioCodeCredential = "${{ inputs.exclude-visual-studio-code-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCodeCredential)) {
-          $params["ExcludeVisualStudioCodeCredential"] = $true
+          $params["ExcludeVisualStudioCodeCredential"] = [System.Convert]::ToBoolean($excludeVisualStudioCodeCredential)
         }
 
         $excludeAzureCliCredential = "${{ inputs.exclude-azure-cli-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeAzureCliCredential)) {
-          $params["ExcludeAzureCliCredential"] = $true
+          $params["ExcludeAzureCliCredential"] = [System.Convert]::ToBoolean($excludeAzureCliCredential)
         }
 
         $excludeAzurePowerShellCredential = "${{ inputs.exclude-azure-powershell-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeAzurePowerShellCredential)) {
-          $params["ExcludeAzurePowerShellCredential"] = $true
+          $params["ExcludeAzurePowerShellCredential"] = [System.Convert]::ToBoolean($excludeAzurePowerShellCredential)
         }
 
         $excludeInteractiveBrowserCredential = "${{ inputs.exclude-interactive-browser-credential }}"
         if (-Not [string]::IsNullOrWhiteSpace($excludeInteractiveBrowserCredential)) {
-          $params["ExcludeInteractiveBrowserCredential"] = $true
+          $params["ExcludeInteractiveBrowserCredential"] = [System.Convert]::ToBoolean($excludeInteractiveBrowserCredential)
         }
 
         $timeout = "${{ inputs.timeout }}"
