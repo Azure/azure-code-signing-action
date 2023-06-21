@@ -181,7 +181,7 @@ runs:
         AZURE_USERNAME: ${{ inputs.azure-username }}
         AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
-        Install-Module -Name AzureCodeSigning -RequiredVersion 0.2.15 -Force
+        Install-Module -Name AzureCodeSigning -RequiredVersion 0.2.15 -Force -Repository PSGallery
 
         $params = @{}
 
