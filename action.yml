@@ -37,10 +37,6 @@ inputs:
   certificate-profile-name:
     description: The Certificate Profile name.
     required: true
-  correlation-id:
-    description: An opaque string value that you can provide to correlate sign requests with your own
-                 workflows such as build identifiers or machine names.
-    required: false
   files-folder:
     description: The folder containing files to be signed. Can be combined with the file-catalog input.
     required: false
@@ -198,11 +194,6 @@ runs:
         $certificateProfileName = "${{ inputs.certificate-profile-name }}"
         if (-Not [string]::IsNullOrWhiteSpace($certificateProfileName)) {
           $params["CertificateProfileName"] = $certificateProfileName
-        }
-
-        $correlationId = "${{ inputs.correlation-id }}"
-        if (-Not [string]::IsNullOrWhiteSpace($correlationId)) {
-          $params["CorrelationId"] = $correlationId
         }
 
         $filesFolder = "${{ inputs.files-folder }}"
