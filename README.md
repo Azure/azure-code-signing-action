@@ -115,9 +115,6 @@ code-signing-account-name: my-account-name
 
 # The Certificate Profile name.
 certificate-profile-name: my-profile-name
-
-# An opaque string value that you can provide to correlate sign requests with your own workflows such as build identifiers or machine names.
-correlation-id: 32C50B44-D8D0-457A-B0FD-9D8220DE91C7
 ```
 
 ### File Specification
