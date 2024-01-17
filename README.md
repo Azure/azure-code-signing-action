@@ -215,14 +215,14 @@ pkcs7-oid: 1.3.6.1.5.5.7.3.3
 enhanced-key-usage: 1.3.6.1.5.5.7.3.3
 ```
 
-### Timeout
+### Miscellaneous
 ```yaml
 # The number of seconds that the Azure Code Signing service will wait for all files to be signed before it exits. The default value is 300 seconds.
 timeout: 600
-```
 
-## Release Notes
-<!-- to be added -->
+# The summed length of file paths that can be signed with each signtool call. This parameter should only be relevant if you are signing a large number of files. Increasing the value may result in performance gains at the risk of potentially hitting your system's maximum command length limit. The minimum value is 0 and the maximum value is 30000. A value of 0 means that every file will be signed with an individual call to signtool.
+batch-size: 10000
+```
 
 ## Contributing
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
