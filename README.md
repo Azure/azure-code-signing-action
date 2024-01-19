@@ -2,13 +2,14 @@
 The Azure Code Signing Action allows you to digitally sign your files using an Azure Code Signing certificate during a GitHub Actions run.
 
 ## Runner Requirements
-This Action can only be executed on Windows runner. It is supported by the following GitHub hosted runners:
-- [windows-2022](https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md)
-- [windows-2019](https://github.com/actions/runner-images/blob/main/images/win/Windows2019-Readme.md)
+This Action can only be executed on Windows runners. It is supported by the following GitHub hosted runners:
+- [windows-2022](https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md)
+- [windows-2019](https://github.com/actions/runner-images/blob/main/images/windows/Windows2019-Readme.md)
 
-It is also possible to use self-hosted runners that support PowerShell 5.1 and the .NET 6 runtime (Windows 7+).
-
-<!-- something about onboarding -->
+It is also possible to use self-hosted runners with the following requirements:
+- Windows 7+
+- PowerShell 5.1+
+- .NET runtime 6.0+
 
 ## Example
 The example below shows how to sign the build output of a simple Wpf application.
@@ -38,12 +39,12 @@ jobs:
         run: dotnet build --configuration Release --no-restore WpfApp
 
       - name: Sign files with Azure Code Signing
-        uses: azure/azure-code-signing-action@v0.2.15
+        uses: azure/azure-code-signing-action@v0.3.0
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
           azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://wus2.codesigning.azure.net/
+          endpoint: https://eus2.codesigning.azure.net/
           code-signing-account-name: vscx-codesigning
           certificate-profile-name: vscx-certificate-profile
           files-folder: ${{ github.workspace }}\App\App\bin\Release\net6.0-windows
@@ -108,7 +109,7 @@ exclude-interactive-browser-credential: true
 ### Account Details
 ```yaml
 # The Code Signing Account endpoint. The URI value must have a URI that aligns to the region your Code Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.
-endpoint: https://wus2.codesigning.azure.net/
+endpoint: https://eus2.codesigning.azure.net/
 
 # The Code Signing Account name.
 code-signing-account-name: my-account-name
@@ -223,6 +224,35 @@ timeout: 600
 # The summed length of file paths that can be signed with each signtool call. This parameter should only be relevant if you are signing a large number of files. Increasing the value may result in performance gains at the risk of potentially hitting your system's maximum command length limit. The minimum value is 0 and the maximum value is 30000. A value of 0 means that every file will be signed with an individual call to signtool.
 batch-size: 10000
 ```
+
+## Best Practices
+### Server Selection
+There is currently a known issue with the WUS region where ~10% of signing requests will be very slow (up to 100 seconds to sign a single file). This may cause significant slow downs and possibly timeout failures during runs. It is suggested to use the EUS region when possible:
+
+```yaml
+endpoint: https://eus2.codesigning.azure.net/
+```
+
+The Azure Code Signing team is currently working with Azure to solve this problem.
+
+### Authentication
+This Action performs authentication using [DefaultAzureCredential](https://learn.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) which attempts a series of authentication methods in order. If one method fails, it will attempt the next one until authentication is successful.
+
+Each authentication method can be [disabled individually](https://github.com/Azure/azure-code-signing-action#exclude-credentials) so that no time is wasted attempting to authenticate with methods that will never pass.
+
+For example, when authenticating with [EnvironmentCredential](https://learn.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) specifically, disable the other credentials with the following inputs:
+```C#
+exclude-environment-credential: false
+exclude-managed-identity-credential: true
+exclude-shared-token-cache-credential: true
+exclude-visual-studio-credential: true
+exclude-visual-studio-code-credential: true
+exclude-azure-cli-credential: true
+exclude-azure-powershell-credential: true
+exclude-interactive-browser-credential: true
+```
+
+This can make the Action fail faster if for some reason the [EnvironmentCredential](https://learn.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) fails. Similarly, if using for example an [AzureCliCredential ](https://learn.microsoft.com/dotnet/api/azure.identity.azureclicredential?view=azure-dotnet), then we want to skip over attempting to authenticate with the several methods that come before it in order.
 
 ## Contributing
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
