@@ -241,7 +241,7 @@ This Action performs authentication using [DefaultAzureCredential](https://learn
 Each authentication method can be [disabled individually](https://github.com/Azure/azure-code-signing-action#exclude-credentials) so that no time is wasted attempting to authenticate with methods that will never pass.
 
 For example, when authenticating with [EnvironmentCredential](https://learn.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) specifically, disable the other credentials with the following inputs:
-```C#
+```yaml
 exclude-environment-credential: false
 exclude-managed-identity-credential: true
 exclude-shared-token-cache-credential: true
