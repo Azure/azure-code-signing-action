@@ -44,7 +44,7 @@ jobs:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
           azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://eus2.codesigning.azure.net/
+          endpoint: https://eus.codesigning.azure.net/
           code-signing-account-name: vscx-codesigning
           certificate-profile-name: vscx-certificate-profile
           files-folder: ${{ github.workspace }}\App\App\bin\Release\net6.0-windows
@@ -109,7 +109,7 @@ exclude-interactive-browser-credential: true
 ### Account Details
 ```yaml
 # The Code Signing Account endpoint. The URI value must have a URI that aligns to the region your Code Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.
-endpoint: https://eus2.codesigning.azure.net/
+endpoint: https://eus.codesigning.azure.net/
 
 # The Code Signing Account name.
 code-signing-account-name: my-account-name
@@ -230,7 +230,7 @@ batch-size: 10000
 There is currently a known issue with the WUS region where ~10% of signing requests will be very slow (up to 100 seconds to sign a single file). This may cause significant slow downs and possibly timeout failures during runs. It is suggested to use the EUS region when possible:
 
 ```yaml
-endpoint: https://eus2.codesigning.azure.net/
+endpoint: https://eus.codesigning.azure.net/
 ```
 
 The Azure Code Signing team is currently working with Azure to solve this problem.
