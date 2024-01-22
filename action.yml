@@ -164,16 +164,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Remove lock on dotnet.exe
-      run: |
-        try { dotnet build-server shutdown } catch {}
-      shell: pwsh
-
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: 6.0.x
-
     - name: Invoke signing
       env:
         AZURE_TENANT_ID: ${{ inputs.azure-tenant-id }}
@@ -184,7 +174,7 @@ runs:
         AZURE_USERNAME: ${{ inputs.azure-username }}
         AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
-        Install-Module -Name AzureCodeSigning -RequiredVersion 0.2.26 -Force -Repository PSGallery
+        Install-Module -Name AzureCodeSigning -RequiredVersion 0.3.0 -Force -Repository PSGallery
 
         $params = @{}
 
