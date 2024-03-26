@@ -164,6 +164,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: New action warning
+      run: |
+        Write-Warning "This Action is deprecated and will be deleted on June 30th, 2024. Please migrate to the new Trusted Signing Action (https://github.com/azure/trusted-signing-action) as soon as possible. All future bug fixes and enhancements will be exclusively released for the new Action."
+      shell: pwsh
+  
     - name: Invoke signing
       env:
         AZURE_TENANT_ID: ${{ inputs.azure-tenant-id }}
