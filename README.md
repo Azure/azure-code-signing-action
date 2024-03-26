@@ -1,5 +1,5 @@
 > [!WARNING]
-> We're excited to announce that Azure Code Signing has undergone a rebranding and is now known as Trusted Signing. As part of this transition, we're archived the existing repository in favor of [Azure/trusted-signing-action](https://github.com/azure/trusted-signing-action). Please migrate to the new [Trusted Signing Action](https://github.com/marketplace/actions/trusted-signing) as soon as possible. All future bug fixes and enhancements will be exclusively released for the new Action. You will have 90 days to migrate at which point the old repository will be deleted.
+> We're excited to announce that Azure Code Signing has undergone a rebranding and is now known as Trusted Signing. As part of this transition, we're deprecating the existing Action in favor of [Azure/trusted-signing-action](https://github.com/azure/trusted-signing-action). Please migrate to the new [Trusted Signing Action](https://github.com/marketplace/actions/trusted-signing) as soon as possible. All future bug fixes and enhancements will be exclusively released for the new Action. You will have 90 days to migrate at which point the old repository will be deleted.
 > - **April 1st, 2024**: Archival
 > - **June 30th, 2024**: Deletion
 
